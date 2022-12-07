@@ -2,17 +2,41 @@
 #include <fstream>
 #include <string>
 #include <time.h>
-#include <windows.h>
-#include <mmsystem.h>
 #define MAXBEDS 10
 #define MAXDOC 20
 #define MAXALLOCATION 2
 
+#ifdef _WIN32
+	#include <windows.h>
+    #include <mmsystem.h>
+#elif __linux__
+	#include<unistd.h>  
+#elif __APPLE__	
+	#include<unistd.h>  
+#elif __unix__
+	#include<unistd.h>  
+#endif
+
 using namespace std;
 
-string PatFileLoc = "D:\\BE IV SEM\\Projects\\oops\\Files\\Patients\\";
-string DocFileLoc = "D:\\BE IV SEM\\Projects\\oops\\Files\\Doctors\\";
-string LogFileLoc = "D:\\BE IV SEM\\Projects\\oops\\Files\\Log.txt";
+string PatFileLoc = "Files\\Patients\\";
+string DocFileLoc = "Files\\Doctors\\";
+string LogFileLoc = "Files\\Log.txt";
+
+void sleeptime(int x)
+{
+    #ifdef _WIN32
+	    Sleep(x);
+    #elif __linux__
+	    sleep(x);  
+    #elif __APPLE__	
+	    sleep(x); 
+    #elif __unix__
+	    sleep(x); 
+    #else
+	    return;
+	#endif
+}
 
 class Person
 {
@@ -32,84 +56,7 @@ public:
     void Display();
 };
 
-class Doctor : public Person
-{
-    string Specialty;
 
-public:
-    int DocID;
-    int NoOfPatients;
-    string DoctorAvaliable;
-    //QuarantineHall *HallNo;
-    int HallNo;
-    static int DocIDCounter;
-
-    Doctor(int n) : HallNo(n) //works fully
-    {
-        DocID = DocIDCounter++;
-        fstream file;
-        string filename;
-        filename = DocFileLoc + to_string(DocID) + ".txt";
-        file.open(filename, ios::app);
-
-        cout << "Enter Doctor Details\nName : ";
-        cin >> Name;
-        cout << "Age : ";
-        cin >> Age;
-        cout << "Gender : ";
-        cin >> Gender;
-        cout << "Blood Group : ";
-        cin >> BloodGroup;
-        cout<< "Contact Number : ";
-        cin >> ContactNo;
-        cout << "Specialty : ";
-        cin >> Specialty;
-        NoOfPatients = 0;
-        DoctorAvaliable = "YES";
-        if (!file)
-        {
-            cout << "Doctor File not created!";
-        }
-        else
-        {
-            cout << "Doctor File created successfully!" << endl;
-            file << "Doctor Details\nDoctor ID : " << DocID << endl;
-            file << "Name : " << Name << endl;
-            file << "Age : " << Age << endl;
-            file << "Gender : " << Gender << endl;
-            file << "Blood Group : " << BloodGroup << endl;
-            file << "Contact Number : " << ContactNo << endl;
-            file << "Speciality : " << Specialty << endl;
-            file << "Hall No : " << HallNo << endl;
-            file.close();
-        }
-    }
-    Doctor(int n, string N) : HallNo(n) //works fully
-    {
-        Name = "Dummy";
-        DocID = 0;
-        Age = 0;
-        Gender = "None";
-        BloodGroup = "None";
-        ContactNo = 0;
-        Specialty = "None";
-        NoOfPatients = 0;
-        DoctorAvaliable = "YES";
-    }
-    void Display() //works fully
-    {
-        cout << "Doctor Details\nDoctor ID : " << DocID
-             << "\nName : " << Name
-             << "\nAge : " << Age
-             << "\nGender : " << Gender
-             << "\nBlood Group : " << BloodGroup
-             << "\nContact Number : " << ContactNo
-             << "\nSpecialty : " << Specialty
-             << "\nNo of Patients : " << NoOfPatients
-             << "\nDoctor available : " << DoctorAvaliable << endl;
-    }
-};
-int Doctor::DocIDCounter = 1;
 class Patient : public Person
 {
 public:
@@ -206,6 +153,110 @@ public:
     }
 };
 int Patient::PatientCount = 1;
+class Doctor : public Person
+{
+    string Specialty;
+
+public:
+    int DocID;
+    int NoOfPatients;
+    string DoctorAvaliable;
+    //QuarantineHall *HallNo;
+    int HallNo;
+    static int DocIDCounter;
+    Patient *patientAssigned[5];
+
+    Doctor(int n) : HallNo(n) //works fully
+    {
+        DocID = DocIDCounter++;
+        fstream file;
+        string filename;
+        filename = DocFileLoc + to_string(DocID) + ".txt";
+        file.open(filename, ios::app);
+        Patient *p = new Patient(0, "Dummy");
+        for(int i = 0;i<5;i++)
+        {
+            patientAssigned[i] = p;
+        }
+        cout << "Enter Doctor Details\nName : ";
+        cin >> Name;
+        cout << "Age : ";
+        cin >> Age;
+        cout << "Gender : ";
+        cin >> Gender;
+        cout << "Blood Group : ";
+        cin >> BloodGroup;
+        cout<< "Contact Number : ";
+        cin >> ContactNo;
+        cout << "Specialty : ";
+        cin >> Specialty;
+        NoOfPatients = 0;
+        DoctorAvaliable = "YES";
+        if (!file)
+        {
+            cout << "Doctor File not created!";
+        }
+        else
+        {
+            cout << "Doctor File created successfully!" << endl;
+            file << "Doctor Details\nDoctor ID : " << DocID << endl;
+            file << "Name : " << Name << endl;
+            file << "Age : " << Age << endl;
+            file << "Gender : " << Gender << endl;
+            file << "Blood Group : " << BloodGroup << endl;
+            file << "Contact Number : " << ContactNo << endl;
+            file << "Speciality : " << Specialty << endl;
+            file << "Hall No : " << HallNo << endl;
+            file.close();
+        }
+    }
+    Doctor(int n, string N) : HallNo(n) //works fully
+    {
+        Name = "Dummy";
+        DocID = 0;
+        Age = 0;
+        Gender = "None";
+        BloodGroup = "None";
+        ContactNo = 0;
+        Specialty = "None";
+        NoOfPatients = 0;
+        DoctorAvaliable = "YES";
+    }
+    void Display() //works fully
+    {
+        cout << "Doctor Details\nDoctor ID : " << DocID
+             << "\nName : " << Name
+             << "\nAge : " << Age
+             << "\nGender : " << Gender
+             << "\nBlood Group : " << BloodGroup
+             << "\nContact Number : " << ContactNo
+             << "\nSpecialty : " << Specialty
+             << "\nNo of Patients : " << NoOfPatients
+             << "\nDoctor available : " << DoctorAvaliable << endl;
+        for(int i=0;i<5;i++)
+        {
+            cout<<"----------------------------------"<<endl;
+            if(patientAssigned[i]->PatientID != 0)
+            {
+                patientAssigned[i]->Display();
+                cout<<endl;
+            }
+        }
+    }
+    void Display2() //works fully
+    {
+        cout << "Doctor Details\nDoctor ID : " << DocID
+             << "\nName : " << Name
+             << "\nAge : " << Age
+             << "\nGender : " << Gender
+             << "\nBlood Group : " << BloodGroup
+             << "\nContact Number : " << ContactNo
+             << "\nSpecialty : " << Specialty
+             << "\nNo of Patients : " << NoOfPatients
+             << "\nDoctor available : " << DoctorAvaliable << endl;
+    }
+};
+int Doctor::DocIDCounter = 1;
 class Bed
 {
 public:
@@ -233,7 +284,7 @@ public:
         if (doctor->DocID != 0 && patient->PatientID != 0)
         {
             cout << "Bed ID : " << BedID + 1 << endl;
-            doctor->Display();
+            doctor->Display2();
             cout << endl;
             patient->Display();
             cout << endl;
@@ -247,7 +298,7 @@ public:
         else if (patient->PatientID == 0 && doctor->DocID != 0)
         {
             cout << "Bed ID : " << BedID + 1 << "\nPatient not present!" << endl;
-            doctor->Display();
+            doctor->Display2();
             cout << endl;
         }
         else
@@ -543,7 +594,7 @@ public:
     }
     void AssignDoctor()
     {
-        int pid, adid, did;
+        int pid, adid, did,pno;
         bool flag;
         cout << "Enter Patient Id : ";
         cin >> pid;
@@ -565,6 +616,7 @@ public:
                 if (bed[i]->patient->PatientID == pid && docUnit[did]->NoOfPatients < MAXALLOCATION)
                 {
                     bed[i]->doctor = docUnit[did];
+                    pno = i;
                     flag = true;
                 }
             }
@@ -575,7 +627,7 @@ public:
                 {
                     docUnit[did]->DoctorAvaliable = "NO";
                 }
-
+                docUnit[did]->patientAssigned[docUnit[did]->NoOfPatients] = bed[pno]->patient;
                 cout << "Doctor Id " << did + 1 << " assigned to Patient ID " << pid << endl;
             }
             else if (docUnit[did]->NoOfPatients >= MAXALLOCATION)
@@ -654,7 +706,7 @@ public:
         {
             if (docUnit[i]->DocID == did)
             {
-                docUnit[i]->Display();
+                docUnit[i]->Display2();
                 flag = true;
             }
         }
@@ -719,7 +771,7 @@ public:
             if (docUnit[i]->DocID != 0)
             {
                 cout << "Quarantine hall Doctor ID " << docUnit[i]->DocID << endl;
-                docUnit[i]->Display();
+                docUnit[i]->Display2();
                 cout << endl;
             }
         }
@@ -769,7 +821,7 @@ public:
 int QuarantineHall::HallNoCount = 0;
 int main()
 {
-    int ch, b = 3, p = 0, d = 2, s1 = 30, s2 = 30, s3 = 30, did, pid, i;
+    int ch, b = 10, p = 0, d = 5, s1 = 30, s2 = 30, s3 = 30, did, pid, i;
     QuarantineHall H1(b, p, d, "admin");
     bool ret;
     string n, pass, pass2;
@@ -778,8 +830,7 @@ int main()
     CurrentTime.pop_back();
     fstream Logfile;
     Logfile.open(LogFileLoc, ios::app);
-    PlaySoundA((LPCSTR) "D:\\BE IV SEM\\Projects\\oops\\Music\\Quarentine hall.WAV", NULL, SND_FILENAME | SND_ASYNC);
-    sleep(5);
+    sleeptime(5);
 
     while (1)
     {
@@ -849,8 +900,7 @@ int main()
             ret = H1.Admit();
             if(ret)
             {
-                PlaySoundA((LPCSTR) "D:\\BE IV SEM\\Projects\\oops\\Music\\Get well soon.WAV", NULL, SND_FILENAME | SND_ASYNC);
-                sleep(2);
+                sleeptime(2);
             }
             break;
         case 5:
@@ -859,8 +909,7 @@ int main()
             ret = H1.Discharge();
             if(ret)
             {
-                PlaySoundA((LPCSTR) "D:\\BE IV SEM\\Projects\\oops\\Music\\Congats on getting well.WAV", NULL, SND_FILENAME | SND_ASYNC);
-                sleep(2);
+                sleeptime(2);
             }
             break;
         case 6:
@@ -972,8 +1021,7 @@ int main()
             break;
         case 18:
             Logfile.close();
-            PlaySoundA((LPCSTR) "D:\\BE IV SEM\\Projects\\oops\\Music\\Thank you.WAV", NULL, SND_FILENAME | SND_ASYNC);
-            sleep(5);
+            sleeptime(5);
             exit(0);
         }
     }
